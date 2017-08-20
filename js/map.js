@@ -111,8 +111,10 @@ var getCheckoutTime = function () {
 // рандомного размера с рандомным наполнением
 var getOfferFeatures = function () {
   // Объявляем временный массив, рандомные элементы которого будут стираться в цикле
+  // Если массив 'temporaryArray' убрать и использовать массив 'FEATURES',
+  // то массив 'FEATURES' затрется - считаю это неправильным. Поэтому оставил его.
   var temporaryArray = FEATURES.slice();
-  var randomSize = getRandomValue(0, FEATURES.length);
+  var randomSize = getRandomValue(0, temporaryArray.length);
   // Объявляем массив, в который будем записывать рандомные элементы из temporaryArray
   var randomFeatures = [];
   for (var i = 0; i < (randomSize); i++) {
@@ -155,47 +157,52 @@ for (var i = 0; i < ADS_QUANTITY; i++) {
 // Объявляем переменную, внутри которой будет находится DIV-контейнер будущих меток
 var pinMapElement = document.querySelector('.tokyo__pin-map');
 
-// Объявляем массив, внутри которого будет находится DIV c разметкой метки
-var pin = [];
-
 // Объявляем функцию, которая в цикле вставляет в DIV-контейнер все метки
-var insertAllPins = function () {
-  // Объявляем переменную, внутри которой будет находится DOM-объект
+var insertAllPins = function (array) {
+  // Объявляем массив, внутри которого будет находится DIV c разметкой метки
+  var pin = [];
+  // Объявляем переменную, внутри которой будет находиться DOM-объект с пинами
   var fragment = document.createDocumentFragment();
   for (i = 0; i < ADS_QUANTITY; i++) {
     pin[i] = document.createElement('div');
     pin[i].className = 'pin';
-    pin[i].style.left = (ads[i].location.x) + 'px';
-    pin[i].style.top = (ads[i].location.y) + 'px';
-    pin[i].innerHTML = '<img src=\'' + ads[i].author.avatar + '\' class=\'rounded\' width=\'40\' height=\'40\'>';
+    pin[i].style.left = (array[i].location.x) + 'px';
+    pin[i].style.top = (array[i].location.y) + 'px';
+    pin[i].innerHTML = '<img src=\'' + array[i].author.avatar + '\' class=\'rounded\' width=\'40\' height=\'40\'>';
     fragment.appendChild(pin[i]);
   }
   pinMapElement.appendChild(fragment);
 };
 
-insertAllPins();
-
-// Объявляем переменную, внутри которой находится TEMPLATE объявления
-var lodgeTemplate = document.getElementById('lodge-template').content;
-
-// Объявляем переменную, в которую клонируем шаблон объявления
-var lodgeElement = lodgeTemplate.cloneNode(true);
+insertAllPins(ads);
 
 // Объявляем функцию создания тегов SPAN по количеству особенностей размещения
-var createSpans = function () {
+var createSpans = function (array) {
+  // Объявим массив, внутрь которого ниже в цикле сложим спаны преимуществ
   var featureSpan = [];
-  for (i = 0; i < ads[0].offer.features.length; i++) {
+  // Объявим переменную, внутри которой будет находиться DOM-элемент со спанами преимуществ
+  var fragment = document.createDocumentFragment();
+  for (i = 0; i < array.length; i++) {
     featureSpan[i] = document.createElement('span');
-    featureSpan[i].className = 'feature__image feature__image--' + ads[0].offer.features[i];
-    lodgeElement.querySelector('.lodge__features').appendChild(featureSpan[i]);
+    featureSpan[i].className = 'feature__image feature__image--' + array[i];
+    fragment.appendChild(featureSpan[i]);
   }
+  // Возвратим этот DOM-элемент
+  return (fragment);
 };
 
 // Задаем функцию заполнения шаблона данными из 1-го элемента массива объявлений
-var fillLodgeElement = function () {
-  lodgeElement.querySelector('.lodge__title').textContent = ads[0].offer.title;
-  lodgeElement.querySelector('.lodge__address').textContent = ads[0].offer.address;
-  lodgeElement.querySelector('.lodge__price').textContent = ads[0].offer.price + 'Р/ночь';
+var fillDialog = function (dataObject) {
+  // Объявляем переменную, внутри которой находится TEMPLATE объявления
+  var lodgeTemplate = document.getElementById('lodge-template').content;
+  // Объявляем переменную, в которую клонируем шаблон объявления
+  var lodgeElement = lodgeTemplate.cloneNode(true);
+  // Заполним заголовок объявления
+  lodgeElement.querySelector('.lodge__title').textContent = dataObject.offer.title;
+  // Заполним адрес объявления
+  lodgeElement.querySelector('.lodge__address').textContent = dataObject.offer.address;
+  // Заполним стоимость объявления
+  lodgeElement.querySelector('.lodge__price').textContent = dataObject.offer.price + 'Р/ночь';
   switch (ads[0].offer.type) {
     case 'flat':
       lodgeElement.querySelector('.lodge__type').textContent = 'Квартира';
@@ -207,18 +214,18 @@ var fillLodgeElement = function () {
       lodgeElement.querySelector('.lodge__type').textContent = 'Дом';
       break;
   }
-  lodgeElement.querySelector('.lodge__rooms-and-guests').textContent = 'Для ' + ads[0].offer.guests + ' гостей в ' + ads[0].offer.rooms + ' комнатах';
-  lodgeElement.querySelector('.lodge__checkin-time').textContent = 'Заезд после ' + ads[0].offer.checkin + ', выезд до ' + ads[0].offer.checkout;
-  createSpans();
-  lodgeElement.querySelector('.lodge__description').textContent = ads[0].offer.description;
-};
-
-fillLodgeElement();
-
-// Задаем функцию вставки новых данных на страницу
-var pasteNewData = function () {
-  document.querySelector('.dialog__title img').src = ads[0].author.avatar;
+  // Заполним данные о гостях и комнатах
+  lodgeElement.querySelector('.lodge__rooms-and-guests').textContent = 'Для ' + dataObject.offer.guests + ' гостей в ' + ads[0].offer.rooms + ' комнатах';
+  // Заполним данные о времени заезда и выезда
+  lodgeElement.querySelector('.lodge__checkin-time').textContent = 'Заезд после ' + dataObject.offer.checkin + ', выезд до ' + ads[0].offer.checkout;
+  // Вставим заготовленный DOM-фрагмент со спанами преимуществ
+  lodgeElement.querySelector('.lodge__features').appendChild(createSpans(dataObject.offer.features));
+  // Заполним данные 'Description' объявления
+  lodgeElement.querySelector('.lodge__description').textContent = dataObject.offer.description;
+  // Вставим аватар арендодателя
+  document.querySelector('.dialog__title img').src = dataObject.author.avatar;
+  // Заменим существующую разметку на сформированный шаблон объявления
   document.querySelector('.dialog').replaceChild(lodgeElement, document.querySelector('.dialog__panel'));
 };
 
-pasteNewData();
+fillDialog(ads[0]);
