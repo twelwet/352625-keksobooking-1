@@ -178,6 +178,7 @@ var insertAllPins = function (array) {
     pin.style.left = (array[i].location.x + 23) + 'px';
     pin.style.top = (array[i].location.y + 75) + 'px';
     pin.innerHTML = '<img src=\'' + array[i].author.avatar + '\' class=\'rounded\' width=\'40\' height=\'40\'>';
+    pin.tabIndex = 0;
     fragment.appendChild(pin);
   }
   pinMapElement.appendChild(fragment);
@@ -185,23 +186,22 @@ var insertAllPins = function (array) {
 
 insertAllPins(data);
 
-// Объявляем функцию создания тегов SPAN по количеству особенностей размещения
-var createSpans = function (array) {
-  // Объявим переменную, внутрь которой будет находится SPAN преимуществ
-  var featureSpan;
-  // Объявим переменную, внутри которой будет находиться DOM-элемент со спанами преимуществ
-  var fragment = document.createDocumentFragment();
-  for (var i = 0; i < array.length; i++) {
-    featureSpan = document.createElement('span');
-    featureSpan.className = 'feature__image feature__image--' + array[i];
-    fragment.appendChild(featureSpan);
-  }
-  // Возвратим этот DOM-элемент
-  return (fragment);
-};
-
 // Задаем функцию заполнения шаблона данными из 1-го элемента массива объявлений
 var fillDialog = function (array) {
+  // Объявляем функцию создания тегов SPAN по количеству особенностей размещения
+  var createSpans = function (x) {
+    // Объявим переменную, внутрь которой будет находится SPAN преимуществ
+    var featureSpan;
+    // Объявим переменную, внутри которой будет находиться DOM-элемент со спанами преимуществ
+    var fragment = document.createDocumentFragment();
+    for (var i = 0; i < x.length; i++) {
+      featureSpan = document.createElement('span');
+      featureSpan.className = 'feature__image feature__image--' + array[i];
+      fragment.appendChild(featureSpan);
+    }
+    // Возвратим этот DOM-элемент
+    return (fragment);
+  };
   // Объявляем переменную, внутри которой находится TEMPLATE объявления
   var lodgeTemplate = document.getElementById('lodge-template').content;
   // Объявляем переменную, в которую клонируем шаблон объявления
@@ -212,7 +212,7 @@ var fillDialog = function (array) {
   lodgeElement.querySelector('.lodge__address').textContent = array.offer.address;
   // Заполним стоимость объявления
   lodgeElement.querySelector('.lodge__price').textContent = array.offer.price + 'Р/ночь';
-  switch (data[0].offer.type) {
+  switch (array.offer.type) {
     case 'flat':
       lodgeElement.querySelector('.lodge__type').textContent = 'Квартира';
       break;
@@ -237,4 +237,76 @@ var fillDialog = function (array) {
   document.querySelector('.dialog').replaceChild(lodgeElement, document.querySelector('.dialog__panel'));
 };
 
-fillDialog(data[0]);
+// fillDialog(data[0]);
+
+// Записываем в переменную все объекты с классом '.pin'
+var pins = document.querySelectorAll('.pin');
+// [Вопрос] В массив 'pins' первым элементом сохранился '.pin__main',
+// Этот элемент для данной задачи не нужен, как его удалить из массива 'pins'?
+// Код 'pins = pins.splice(0, 1);' почему то не работает.
+// Поэтому пришлось ниже циклы обхода 'pins' с 'i = 1' начинать.
+// Наверное метод 'querySelectorAll' возвращает коллекцию, а не массив,
+// поэтому 'splice' и не работает?
+
+// Объявляем переменную-контейнер диалогового окна объявления
+var dialogContainer = document.querySelector('.dialog');
+
+// Задаем фнукцию деактивации всех активных пинов
+var deactivateAllPins = function () {
+  for (var i = 1; i < pins.length; i++) {
+    pins[i].classList.remove('pin--active');
+  }
+};
+
+// Задаем функцию, которая по клику подсвечивает пин
+var updateActivePin = function (x) {
+  deactivateAllPins();
+  pins[x].classList.add('pin--active');
+};
+
+// Задаем функцию открытия диалогового окна объявления
+var openDialogPanel = function (x) {
+  fillDialog(data[x - 1]);
+  dialogContainer.style.display = 'block';
+};
+
+// Описываем алгоритм 'click' по пину
+var onPinClick = function (elem, x) {
+  elem.addEventListener('click', function () {
+    updateActivePin(x);
+    openDialogPanel(x);
+  });
+};
+
+// Описываем алгоритм 'keydown' ENTER по сфокусированному пину
+var onPinEnter = function (elem, x) {
+  elem.addEventListener('keydown', function (evt) {
+    if (evt.keyCode === 13) {
+      updateActivePin(x);
+      openDialogPanel(x);
+    }
+  });
+};
+
+// Выполняем функции клика и нажатия на ENTER для всех пинов
+for (var i = 1; i < pins.length; i++) {
+  onPinClick(pins[i], i);
+  onPinEnter(pins[i], i);
+}
+
+// Задаем механизм закрытия диалогового окна и деактивации
+// подсвеченного пина при клике на крестик
+var dialogCloseButton = document.querySelector('.dialog__close');
+dialogCloseButton.addEventListener('click', function () {
+  dialogContainer.style.display = 'none';
+  deactivateAllPins();
+});
+
+// Задаем механизм закрытия диалогового окна и деактивации
+// подсвеченного пина при нажатии на ESC
+document.addEventListener('keydown', function (evt) {
+  if (evt.keyCode === 27) {
+    dialogContainer.style.display = 'none';
+    deactivateAllPins();
+  }
+});
