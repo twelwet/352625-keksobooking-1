@@ -186,17 +186,17 @@ var insertAllPins = function (array) {
 
 insertAllPins(data);
 
-// Задаем функцию заполнения шаблона данными из 1-го элемента массива объявлений
+// Задаем функцию заполнения шаблона данными из массива объявлений
 var fillDialog = function (array) {
   // Объявляем функцию создания тегов SPAN по количеству особенностей размещения
-  var createSpans = function (x) {
+  var pasteFeatures = function (subArray) {
     // Объявим переменную, внутрь которой будет находится SPAN преимуществ
     var featureSpan;
     // Объявим переменную, внутри которой будет находиться DOM-элемент со спанами преимуществ
     var fragment = document.createDocumentFragment();
-    for (var i = 0; i < x.length; i++) {
+    for (var i = 0; i < subArray.length; i++) {
       featureSpan = document.createElement('span');
-      featureSpan.className = 'feature__image feature__image--' + x[i];
+      featureSpan.className = 'feature__image feature__image--' + subArray[i];
       fragment.appendChild(featureSpan);
     }
     // Возвратим этот DOM-элемент
@@ -228,7 +228,7 @@ var fillDialog = function (array) {
   // Заполним данные о времени заезда и выезда
   lodgeElement.querySelector('.lodge__checkin-time').textContent = 'Заезд после ' + array.offer.checkin + ', выезд до ' + array.offer.checkout;
   // Вставим заготовленный DOM-фрагмент со спанами преимуществ
-  lodgeElement.querySelector('.lodge__features').appendChild(createSpans(array.offer.features));
+  lodgeElement.querySelector('.lodge__features').appendChild(pasteFeatures(array.offer.features));
   // Заполним данные 'Description' объявления
   lodgeElement.querySelector('.lodge__description').textContent = array.offer.description;
   // Вставим аватар арендодателя
@@ -239,12 +239,6 @@ var fillDialog = function (array) {
 
 var ESC_KEYCODE = 27;
 var ENTER_KEYCODE = 13;
-
-// Записываем в переменную все объекты с классом '.pin' за исключением '.pin__main'
-var pins = document.querySelectorAll('.pin:not(.pin__main)');
-
-// Превращаем pins из коллекции в массив
-pins = Array.prototype.slice.call(pins);
 
 // Объявляем переменную-контейнер диалогового окна объявления
 var dialogContainer = document.querySelector('.dialog');
@@ -261,43 +255,40 @@ var deactivatePin = function () {
 };
 
 // Задаем функцию, которая по клику подсвечивает пин
-var activatePin = function (elem) {
+var activatePin = function (element) {
   deactivatePin();
-  elem.classList.add('pin--active');
+  element.classList.add('pin--active');
 };
 
 // Задаем функцию открытия диалогового окна объявления
-var openDialogPanel = function (x) {
-  fillDialog(data[x]);
+var openDialog = function (arrayNumber) {
+  fillDialog(data[arrayNumber]);
   dialogContainer.style.display = 'block';
+};
+
+// Задаем функцию получения номера объявления из пути к аватару
+var getPinNumber = function (element) {
+  return element.innerHTML.substring(27, 28) - 1;
 };
 
 // Описываем алгоритм 'click' по пину
 var pinMap = document.querySelector('.tokyo__pin-map');
 
 pinMap.onclick = function (evt) {
-  var target = evt.target;
-  if (target.className === 'pin') {
-    activatePin(evt.path[0]);
+  var targetElement = evt.target;
+  if (targetElement.tagName === 'IMG') {
+    targetElement = targetElement.closest('div');
   }
-  if (target.tagName === 'IMG') {
-    activatePin(evt.path[1]);
-  }
-  // Берем номер объявления из пути к аватару:
-  var pinNumber = evt.path[1].innerHTML.substring(27, 28) - 1;
-  openDialogPanel(pinNumber);
+  activatePin(targetElement);
+  openDialog(getPinNumber(targetElement));
 };
 
 // Описываем алгоритм 'keydown' ENTER по пину
 pinMap.onkeydown = function (evt) {
   if (evt.keyCode === ENTER_KEYCODE) {
-    var target = evt.target;
-    if (target.className === 'pin') {
-      activatePin(evt.path[0]);
-    }
-    // Берем номер объявления из пути к аватару:
-    var pinNumber = evt.path[0].innerHTML.substring(27, 28) - 1;
-    openDialogPanel(pinNumber);
+    var targetElement = evt.target;
+    activatePin(targetElement);
+    openDialog(getPinNumber(targetElement));
   }
 };
 
