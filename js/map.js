@@ -196,7 +196,7 @@ var fillDialog = function (array) {
     var fragment = document.createDocumentFragment();
     for (var i = 0; i < x.length; i++) {
       featureSpan = document.createElement('span');
-      featureSpan.className = 'feature__image feature__image--' + array[i];
+      featureSpan.className = 'feature__image feature__image--' + x[i];
       fragment.appendChild(featureSpan);
     }
     // Возвратим этот DOM-элемент
@@ -237,76 +237,83 @@ var fillDialog = function (array) {
   document.querySelector('.dialog').replaceChild(lodgeElement, document.querySelector('.dialog__panel'));
 };
 
-// fillDialog(data[0]);
+var ESC_KEYCODE = 27;
+var ENTER_KEYCODE = 13;
 
-// Записываем в переменную все объекты с классом '.pin'
-var pins = document.querySelectorAll('.pin');
-// [Вопрос] В массив 'pins' первым элементом сохранился '.pin__main',
-// Этот элемент для данной задачи не нужен, как его удалить из массива 'pins'?
-// Код 'pins = pins.splice(0, 1);' почему то не работает.
-// Поэтому пришлось ниже циклы обхода 'pins' с 'i = 1' начинать.
-// Наверное метод 'querySelectorAll' возвращает коллекцию, а не массив,
-// поэтому 'splice' и не работает?
+// Записываем в переменную все объекты с классом '.pin' за исключением '.pin__main'
+var pins = document.querySelectorAll('.pin:not(.pin__main)');
+
+// Превращаем pins из коллекции в массив
+pins = Array.prototype.slice.call(pins);
 
 // Объявляем переменную-контейнер диалогового окна объявления
 var dialogContainer = document.querySelector('.dialog');
 
+// Скрываем диалоговое окно по умолчанию при загрузке страницы
+dialogContainer.style.display = 'none';
+
 // Задаем фнукцию деактивации всех активных пинов
-var deactivateAllPins = function () {
-  for (var i = 1; i < pins.length; i++) {
-    pins[i].classList.remove('pin--active');
+var deactivatePin = function () {
+  var activePin = document.querySelector('.pin--active');
+  if (activePin !== null) {
+    activePin.classList.remove('pin--active');
   }
 };
 
 // Задаем функцию, которая по клику подсвечивает пин
-var updateActivePin = function (x) {
-  deactivateAllPins();
-  pins[x].classList.add('pin--active');
+var activatePin = function (elem) {
+  deactivatePin();
+  elem.classList.add('pin--active');
 };
 
 // Задаем функцию открытия диалогового окна объявления
 var openDialogPanel = function (x) {
-  fillDialog(data[x - 1]);
+  fillDialog(data[x]);
   dialogContainer.style.display = 'block';
 };
 
 // Описываем алгоритм 'click' по пину
-var onPinClick = function (elem, x) {
-  elem.addEventListener('click', function () {
-    updateActivePin(x);
-    openDialogPanel(x);
-  });
+var pinMap = document.querySelector('.tokyo__pin-map');
+
+pinMap.onclick = function (evt) {
+  var target = evt.target;
+  if (target.className === 'pin') {
+    activatePin(evt.path[0]);
+  }
+  if (target.tagName === 'IMG') {
+    activatePin(evt.path[1]);
+  }
+  // Берем номер объявления из пути к аватару:
+  var pinNumber = evt.path[1].innerHTML.substring(27, 28) - 1;
+  openDialogPanel(pinNumber);
 };
 
-// Описываем алгоритм 'keydown' ENTER по сфокусированному пину
-var onPinEnter = function (elem, x) {
-  elem.addEventListener('keydown', function (evt) {
-    if (evt.keyCode === 13) {
-      updateActivePin(x);
-      openDialogPanel(x);
+// Описываем алгоритм 'keydown' ENTER по пину
+pinMap.onkeydown = function (evt) {
+  if (evt.keyCode === ENTER_KEYCODE) {
+    var target = evt.target;
+    if (target.className === 'pin') {
+      activatePin(evt.path[0]);
     }
-  });
+    // Берем номер объявления из пути к аватару:
+    var pinNumber = evt.path[0].innerHTML.substring(27, 28) - 1;
+    openDialogPanel(pinNumber);
+  }
 };
-
-// Выполняем функции клика и нажатия на ENTER для всех пинов
-for (var i = 1; i < pins.length; i++) {
-  onPinClick(pins[i], i);
-  onPinEnter(pins[i], i);
-}
 
 // Задаем механизм закрытия диалогового окна и деактивации
 // подсвеченного пина при клике на крестик
 var dialogCloseButton = document.querySelector('.dialog__close');
 dialogCloseButton.addEventListener('click', function () {
   dialogContainer.style.display = 'none';
-  deactivateAllPins();
+  deactivatePin();
 });
 
 // Задаем механизм закрытия диалогового окна и деактивации
 // подсвеченного пина при нажатии на ESC
 document.addEventListener('keydown', function (evt) {
-  if (evt.keyCode === 27) {
+  if (evt.keyCode === ESC_KEYCODE) {
     dialogContainer.style.display = 'none';
-    deactivateAllPins();
+    deactivatePin();
   }
 });
