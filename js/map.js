@@ -161,7 +161,7 @@ var generateData = function () {
 var data = generateData();
 
 // Объявляем функцию, которая в цикле вставляет в DIV-контейнер все метки
-var insertAllPins = function (array) {
+var insertAllPins = function (element) {
   // Объявляем переменную, внутри которой будет находится DIV-контейнер будущих меток
   var pinMapElement = document.querySelector('.tokyo__pin-map');
 
@@ -169,15 +169,15 @@ var insertAllPins = function (array) {
   var pin;
   // Объявляем переменную, внутри которой будет находиться DOM-объект с пинами
   var fragment = document.createDocumentFragment();
-  for (var i = 0; i < array.length; i++) {
+  for (var i = 0; i < element.length; i++) {
     pin = document.createElement('div');
     pin.className = 'pin';
     // Метка пина 'div.pin' имеет размеры 56px х 75px. Для того, чтобы
     // метка указывала своим острым концом на координаты размещения,
     // необходимо сместиться на 23px вправо и на 75px вниз.
-    pin.style.left = (array[i].location.x + 23) + 'px';
-    pin.style.top = (array[i].location.y + 75) + 'px';
-    pin.innerHTML = '<img src=\'' + array[i].author.avatar + '\' class=\'rounded\' width=\'40\' height=\'40\'>';
+    pin.style.left = (element[i].location.x + 23) + 'px';
+    pin.style.top = (element[i].location.y + 75) + 'px';
+    pin.innerHTML = '<img src=\'' + element[i].author.avatar + '\' class=\'rounded\' width=\'40\' height=\'40\'>';
     pin.tabIndex = 0;
     fragment.appendChild(pin);
   }
@@ -187,16 +187,16 @@ var insertAllPins = function (array) {
 insertAllPins(data);
 
 // Задаем функцию заполнения шаблона данными из массива объявлений
-var fillDialog = function (array) {
+var fillDialog = function (element) {
   // Объявляем функцию создания тегов SPAN по количеству особенностей размещения
-  var pasteFeatures = function (subArray) {
+  var pasteFeatures = function (subElement) {
     // Объявим переменную, внутрь которой будет находится SPAN преимуществ
     var featureSpan;
     // Объявим переменную, внутри которой будет находиться DOM-элемент со спанами преимуществ
     var fragment = document.createDocumentFragment();
-    for (var i = 0; i < subArray.length; i++) {
+    for (var i = 0; i < subElement.length; i++) {
       featureSpan = document.createElement('span');
-      featureSpan.className = 'feature__image feature__image--' + subArray[i];
+      featureSpan.className = 'feature__image feature__image--' + subElement[i];
       fragment.appendChild(featureSpan);
     }
     // Возвратим этот DOM-элемент
@@ -207,12 +207,12 @@ var fillDialog = function (array) {
   // Объявляем переменную, в которую клонируем шаблон объявления
   var lodgeElement = lodgeTemplate.cloneNode(true);
   // Заполним заголовок объявления
-  lodgeElement.querySelector('.lodge__title').textContent = array.offer.title;
+  lodgeElement.querySelector('.lodge__title').textContent = element.offer.title;
   // Заполним адрес объявления
-  lodgeElement.querySelector('.lodge__address').textContent = array.offer.address;
+  lodgeElement.querySelector('.lodge__address').textContent = element.offer.address;
   // Заполним стоимость объявления
-  lodgeElement.querySelector('.lodge__price').textContent = array.offer.price + 'Р/ночь';
-  switch (array.offer.type) {
+  lodgeElement.querySelector('.lodge__price').textContent = element.offer.price + 'Р/ночь';
+  switch (element.offer.type) {
     case 'flat':
       lodgeElement.querySelector('.lodge__type').textContent = 'Квартира';
       break;
@@ -224,15 +224,15 @@ var fillDialog = function (array) {
       break;
   }
   // Заполним данные о гостях и комнатах
-  lodgeElement.querySelector('.lodge__rooms-and-guests').textContent = 'Для ' + array.offer.guests + ' гостей в ' + array.offer.rooms + ' комнатах';
+  lodgeElement.querySelector('.lodge__rooms-and-guests').textContent = 'Для ' + element.offer.guests + ' гостей в ' + element.offer.rooms + ' комнатах';
   // Заполним данные о времени заезда и выезда
-  lodgeElement.querySelector('.lodge__checkin-time').textContent = 'Заезд после ' + array.offer.checkin + ', выезд до ' + array.offer.checkout;
+  lodgeElement.querySelector('.lodge__checkin-time').textContent = 'Заезд после ' + element.offer.checkin + ', выезд до ' + element.offer.checkout;
   // Вставим заготовленный DOM-фрагмент со спанами преимуществ
-  lodgeElement.querySelector('.lodge__features').appendChild(pasteFeatures(array.offer.features));
+  lodgeElement.querySelector('.lodge__features').appendChild(pasteFeatures(element.offer.features));
   // Заполним данные 'Description' объявления
-  lodgeElement.querySelector('.lodge__description').textContent = array.offer.description;
+  lodgeElement.querySelector('.lodge__description').textContent = element.offer.description;
   // Вставим аватар арендодателя
-  document.querySelector('.dialog__title img').src = array.author.avatar;
+  document.querySelector('.dialog__title img').src = element.author.avatar;
   // Заменим существующую разметку на сформированный шаблон объявления
   document.querySelector('.dialog').replaceChild(lodgeElement, document.querySelector('.dialog__panel'));
 };
@@ -261,8 +261,8 @@ var activatePin = function (element) {
 };
 
 // Задаем функцию открытия диалогового окна объявления
-var openDialog = function (arrayNumber) {
-  fillDialog(data[arrayNumber]);
+var openDialog = function (numeral) {
+  fillDialog(data[numeral]);
   dialogContainer.style.display = 'block';
 };
 
@@ -277,7 +277,7 @@ var pinMap = document.querySelector('.tokyo__pin-map');
 pinMap.onclick = function (evt) {
   var targetElement = evt.target;
   if (targetElement.tagName === 'IMG') {
-    targetElement = targetElement.closest('div');
+    targetElement = targetElement.closest('.pin');
   }
   activatePin(targetElement);
   openDialog(getPinNumber(targetElement));
@@ -306,5 +306,142 @@ document.addEventListener('keydown', function (evt) {
   if (evt.keyCode === ESC_KEYCODE) {
     dialogContainer.style.display = 'none';
     deactivatePin();
+  }
+});
+
+// Зададим константу минимальной цены
+var MIN_PRICES = [
+  0,
+  1000,
+  5000,
+  10000
+];
+
+// Объявим переменные полей объявления и кнопки
+var form = document.querySelector('.notice__form');
+var title = form.querySelector('#title');
+var type = form.querySelector('#type');
+var price = form.querySelector('#price');
+var timein = form.querySelector('#timein');
+var timeout = form.querySelector('#timeout');
+var roomNumber = form.querySelector('#room_number');
+var capacity = form.querySelector('#capacity');
+
+// Объявим функцию сброса формы в умолчание
+var setDefaultForm = function () {
+  form.reset();
+  // Параметры заголовка объявления
+  title.required = true;
+  title.minLength = 30;
+  title.maxLength = 100;
+  // Параметры цены объявления
+  price.required = true;
+  price.type = 'number';
+  price.min = 1000;
+  price.max = 1000000;
+  price.value = 1000;
+};
+
+setDefaultForm();
+
+// Объявим функцию автоселекта равнонаполненных полей INPUT
+var autoSelect = function (elem1, elem2) {
+  elem1.addEventListener('change', function () {
+    for (var i = 0; i < elem1.length; i++) {
+      if (elem1.options[i].selected === true) {
+        elem2.options[i].selected = true;
+      }
+    }
+  });
+};
+
+autoSelect(timein, timeout);
+autoSelect(timeout, timein);
+
+// Задаем механизм типа размещения от цены
+price.addEventListener('input', function () {
+  if (price.value >= MIN_PRICES[0] && price.value < MIN_PRICES[1]) {
+    type.options[1].selected = true; // 'Лачуга'
+  }
+  if (price.value >= MIN_PRICES[1] && price.value < MIN_PRICES[2]) {
+    type.options[0].selected = true; // 'Квартира'
+  }
+  if (price.value >= MIN_PRICES[2] && price.value < MIN_PRICES[3]) {
+    type.options[2].selected = true; // 'Дом'
+  }
+  if (price.value >= MIN_PRICES[3]) {
+    type.options[3].selected = true; // 'Дворец'
+  }
+});
+
+// Задаем механизм зависимости кол-ва мест от кол-ва комнат
+roomNumber.addEventListener('change', function () {
+  // Если выбрано: '2 комнаты' или '3 комнаты' или '100 комнат'
+  if (roomNumber.options[1].selected || roomNumber.options[2].selected || roomNumber.options[3].selected) {
+    capacity.options[0].selected = true; // 'для 3 гостей'
+  }
+  // Если выбрано: '1 комната'
+  if (roomNumber.options[0].selected === true) {
+    capacity.options[3].selected = true; // 'не для гостей'
+  }
+});
+
+// Задаем механизм зависимости кол-ва комнат от кол-ва мест
+capacity.addEventListener('change', function () {
+  // Если выбрано: 'для 3 гостей'
+  if (capacity.options[0].selected === true) {
+    roomNumber.options[2].selected = true; // '3 комнаты'
+  }
+  // Если выбрано 'для 2 гостей'
+  if (capacity.options[1].selected === true) {
+    roomNumber.options[1].selected = true; // '2 комнаты'
+  }
+  // Если выбрано 'для 1 гостя'
+  if (capacity.options[2].selected === true) {
+    roomNumber.options[0].selected = true; // '1 комната'
+  }
+  // Если выбрано 'не для гостей'
+  if (capacity.options[3].selected === true) {
+    roomNumber.options[0].selected = true; // '1 комната'
+  }
+});
+
+// Объявим функцию валидации текстового поля
+var validateTitle = function (textField, textMin, textMax) {
+  if (textField.value.length < textMin || textField.value.length > textMax) {
+    textField.style.borderColor = 'red';
+    return false;
+  } else {
+    textField.style.borderColor = '';
+    return true;
+  }
+};
+
+// Объявим функцию валидации числового поля
+var validateNumber = function (numberField, numberMin, numberMax) {
+  if (Number(numberField.value) < Number(numberMin) || Number(numberField.value) > Number(numberMax)) {
+    numberField.style.borderColor = 'red';
+    return false;
+  } else {
+    numberField.style.borderColor = '';
+    return true;
+  }
+};
+
+// Объявим функцию валидации формы
+var validateForm = function () {
+  var titleValid = validateTitle(title, title.minLength, title.maxLength);
+  var numberValid = validateNumber(price, price.min, price.max);
+  return titleValid && numberValid;
+};
+
+// Проверим правильность заполнения полей формы title.value и price.value
+form.addEventListener('submit', function (evt) {
+  // Отменяем действие по умолчанию
+  evt.preventDefault();
+  // Проводим валидацию
+  if (validateForm()) {
+    form.submit();
+    setDefaultForm();
   }
 });
