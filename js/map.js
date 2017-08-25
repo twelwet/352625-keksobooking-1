@@ -326,6 +326,7 @@ var timein = form.querySelector('#timein');
 var timeout = form.querySelector('#timeout');
 var roomNumber = form.querySelector('#room_number');
 var capacity = form.querySelector('#capacity');
+var address = form.querySelector('#address');
 
 // Объявим функцию сброса формы в умолчание
 var setDefaultForm = function () {
@@ -337,9 +338,11 @@ var setDefaultForm = function () {
   // Параметры цены объявления
   price.required = true;
   price.type = 'number';
-  price.min = 1000;
+  price.min = 0;
   price.max = 1000000;
   price.value = 1000;
+  // Параметры адреса объявления
+  address.required = true;
 };
 
 setDefaultForm();
@@ -347,11 +350,7 @@ setDefaultForm();
 // Объявим функцию автоселекта равнонаполненных полей INPUT
 var autoSelect = function (elem1, elem2) {
   elem1.addEventListener('change', function () {
-    for (var i = 0; i < elem1.length; i++) {
-      if (elem1.options[i].selected === true) {
-        elem2.options[i].selected = true;
-      }
-    }
+    elem2.value = elem1.value;
   });
 };
 
@@ -360,49 +359,44 @@ autoSelect(timeout, timein);
 
 // Задаем механизм типа размещения от цены
 price.addEventListener('input', function () {
+  // Цена: от 0 до 999 ед.
   if (price.value >= MIN_PRICES[0] && price.value < MIN_PRICES[1]) {
-    type.options[1].selected = true; // 'Лачуга'
+    type.value = 'bungalo';
   }
+  // Цена: от 1000 до 4999 ед.
   if (price.value >= MIN_PRICES[1] && price.value < MIN_PRICES[2]) {
-    type.options[0].selected = true; // 'Квартира'
+    type.value = 'flat';
   }
   if (price.value >= MIN_PRICES[2] && price.value < MIN_PRICES[3]) {
-    type.options[2].selected = true; // 'Дом'
+    type.value = 'house';
   }
+  // Цена: от 10000 ед.
   if (price.value >= MIN_PRICES[3]) {
-    type.options[3].selected = true; // 'Дворец'
+    type.value = 'palace';
   }
 });
 
 // Задаем механизм зависимости кол-ва мест от кол-ва комнат
 roomNumber.addEventListener('change', function () {
-  // Если выбрано: '2 комнаты' или '3 комнаты' или '100 комнат'
-  if (roomNumber.options[1].selected || roomNumber.options[2].selected || roomNumber.options[3].selected) {
-    capacity.options[0].selected = true; // 'для 3 гостей'
+  // Если выбрано: '2 комнаты' или '3 комнаты' или '100 комнат', то 'для 3 гостей'
+  if (roomNumber.value === '2' || roomNumber.value === '3' || roomNumber.value === '100') {
+    capacity.value = '3';
   }
-  // Если выбрано: '1 комната'
-  if (roomNumber.options[0].selected === true) {
-    capacity.options[3].selected = true; // 'не для гостей'
+  // Если выбрано: '1 комната', то 'не для гостей'
+  if (roomNumber.value === '1') {
+    capacity.options[3].selected = true;
   }
 });
 
 // Задаем механизм зависимости кол-ва комнат от кол-ва мест
 capacity.addEventListener('change', function () {
-  // Если выбрано: 'для 3 гостей'
-  if (capacity.options[0].selected === true) {
-    roomNumber.options[2].selected = true; // '3 комнаты'
-  }
-  // Если выбрано 'для 2 гостей'
-  if (capacity.options[1].selected === true) {
-    roomNumber.options[1].selected = true; // '2 комнаты'
-  }
-  // Если выбрано 'для 1 гостя'
-  if (capacity.options[2].selected === true) {
-    roomNumber.options[0].selected = true; // '1 комната'
-  }
-  // Если выбрано 'не для гостей'
+  // Если выбрано: 'для 1 гостя', то '1 комната';
+  // если 'для 2 гостей', то '2 комнаты';
+  // если 'для 3 гостей', то '3 комнаты'
+  roomNumber.value = capacity.value;
+  // Если выбрано: 'не для гостей', то '1 комната'
   if (capacity.options[3].selected === true) {
-    roomNumber.options[0].selected = true; // '1 комната'
+    roomNumber.value = '1';
   }
 });
 
@@ -411,20 +405,30 @@ var validateTitle = function (textField, textMin, textMax) {
   if (textField.value.length < textMin || textField.value.length > textMax) {
     textField.style.borderColor = 'red';
     return false;
-  } else {
-    textField.style.borderColor = '';
-    return true;
   }
+  textField.style.borderColor = '';
+  return true;
 };
 
 // Объявим функцию валидации числового поля
 var validateNumber = function (numberField, numberMin, numberMax) {
-  if (Number(numberField.value) < Number(numberMin) || Number(numberField.value) > Number(numberMax)) {
+  if (Number(numberField.value) <= Number(numberMin) || Number(numberField.value) > Number(numberMax)) {
     numberField.style.borderColor = 'red';
     return false;
-  } else {
-    numberField.style.borderColor = '';
-    return true;
+  }
+  numberField.style.borderColor = '';
+  return true;
+};
+
+// Объявим функцию валидации поля адреса
+var validateAddress = function (addressField) {
+  switch (addressField.value) {
+    case '':
+      addressField.style.borderColor = 'red';
+      return false;
+    default:
+      addressField.style.borderColor = '';
+      return true;
   }
 };
 
@@ -432,7 +436,8 @@ var validateNumber = function (numberField, numberMin, numberMax) {
 var validateForm = function () {
   var titleValid = validateTitle(title, title.minLength, title.maxLength);
   var numberValid = validateNumber(price, price.min, price.max);
-  return titleValid && numberValid;
+  var addressValid = validateAddress(address);
+  return titleValid && numberValid && addressValid;
 };
 
 // Проверим правильность заполнения полей формы title.value и price.value
