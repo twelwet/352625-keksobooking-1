@@ -179,6 +179,7 @@ var insertAllPins = function (element) {
     pin.style.top = (element[i].location.y + 75) + 'px';
     pin.innerHTML = '<img src=\'' + element[i].author.avatar + '\' class=\'rounded\' width=\'40\' height=\'40\'>';
     pin.tabIndex = 0;
+    pin.dataset.index = i;
     fragment.appendChild(pin);
   }
   pinMapElement.appendChild(fragment);
@@ -266,11 +267,6 @@ var openDialog = function (numeral) {
   dialogContainer.style.display = 'block';
 };
 
-// Задаем функцию получения номера объявления из пути к аватару
-var getPinNumber = function (element) {
-  return element.innerHTML.substring(27, 28) - 1;
-};
-
 // Описываем алгоритм 'click' по пину
 var pinMap = document.querySelector('.tokyo__pin-map');
 
@@ -280,7 +276,7 @@ pinMap.onclick = function (evt) {
     targetElement = targetElement.closest('.pin');
   }
   activatePin(targetElement);
-  openDialog(getPinNumber(targetElement));
+  openDialog(targetElement.dataset.index);
 };
 
 // Описываем алгоритм 'keydown' ENTER по пину
@@ -288,7 +284,7 @@ pinMap.onkeydown = function (evt) {
   if (evt.keyCode === ENTER_KEYCODE) {
     var targetElement = evt.target;
     activatePin(targetElement);
-    openDialog(getPinNumber(targetElement));
+    openDialog(targetElement.dataset.index);
   }
 };
 
