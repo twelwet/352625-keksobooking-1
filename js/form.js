@@ -144,4 +144,8 @@
       setDefaultForm();
     }
   });
+
+  window.form = {
+    address: address
+  };
 })();
