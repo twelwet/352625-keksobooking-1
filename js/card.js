@@ -55,12 +55,9 @@
       // Заменим существующую разметку на сформированный шаблон объявления
       document.querySelector('.dialog').replaceChild(lodgeElement, document.querySelector('.dialog__panel'));
     },
-    open: function (numeral) {
-      window.card.create(window.data[numeral]);
-      dialogContainer.style.display = 'block';
-    },
     close: function () {
       dialogContainer.style.display = 'none';
-    }
+    },
+    dialogContainer: dialogContainer
   };
 })();

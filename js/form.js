@@ -2,13 +2,6 @@
 'use strict';
 
 (function () {
-  // Зададим константу минимальной цены
-  var MIN_PRICES = [
-    0,
-    1000,
-    5000,
-    10000
-  ];
 
   // form.js
   // Объявим переменные полей объявления и кнопки
@@ -37,38 +30,37 @@
     price.value = 1000;
     // Параметры адреса объявления
     address.required = true;
+    address.disabled = true;
   };
 
   setDefaultForm();
 
-  // Объявим функцию автоселекта равнонаполненных полей INPUT
-  var autoSelect = function (elem1, elem2) {
-    elem1.addEventListener('change', function () {
-      elem2.value = elem1.value;
-    });
+  /* ------------------*/
+
+  var syncValues = function (element, value) {
+    element.value = value;
   };
 
-  autoSelect(timein, timeout);
-  autoSelect(timeout, timein);
+  window.synchronizeFields(timein, timeout, [12, 13, 14], [12, 13, 14], syncValues);
+  window.synchronizeFields(timeout, timein, [12, 13, 14], [12, 13, 14], syncValues);
+  window.synchronizeFields(type, price, ['flat', 'bungalo', 'house', 'palace'], [1000, 0, 5000, 10000], syncValues);
 
   // Задаем механизм типа размещения от цены
   price.addEventListener('input', function () {
-    // Цена: от 0 до 999 ед.
-    if (price.value >= MIN_PRICES[0] && price.value < MIN_PRICES[1]) {
+    if (price.value >= 0 && price.value < 999) {
       type.value = 'bungalo';
     }
-    // Цена: от 1000 до 4999 ед.
-    if (price.value >= MIN_PRICES[1] && price.value < MIN_PRICES[2]) {
+    if (price.value >= 1000 && price.value < 4999) {
       type.value = 'flat';
     }
-    if (price.value >= MIN_PRICES[2] && price.value < MIN_PRICES[3]) {
+    if (price.value >= 5000 && price.value < 10000) {
       type.value = 'house';
     }
-    // Цена: от 10000 ед.
-    if (price.value >= MIN_PRICES[3]) {
+    if (price.value >= 10000) {
       type.value = 'palace';
     }
   });
+
 
   // Задаем механизм зависимости кол-ва мест от кол-ва комнат
   roomNumber.addEventListener('change', function () {
