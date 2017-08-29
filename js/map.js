@@ -17,15 +17,14 @@
   // Описываем алгоритм 'click' по пину
   pinMap.onclick = function (evt) {
     var targetElement = evt.target;
-    if (targetElement.tagName === 'DIV' && targetElement.dataset.index) {
-      window.pin.activate(targetElement);
-      window.card.open(targetElement.dataset.index);
-    }
-    if (targetElement.tagName === 'IMG' && targetElement.closest('.pin').dataset.index) {
+    if (!targetElement.classList.contains('pin')) {
       targetElement = targetElement.closest('.pin');
-      window.pin.activate(targetElement);
-      window.card.open(targetElement.dataset.index);
     }
+    if (targetElement.classList.contains('pin__main')) {
+      return;
+    }
+    window.pin.activate(targetElement);
+    window.showCard(targetElement.dataset.index);
   };
 
   // Описываем алгоритм 'keydown' ENTER по пину
@@ -33,7 +32,7 @@
     if (evt.keyCode === ENTER_KEYCODE) {
       var targetElement = evt.target;
       window.pin.activate(targetElement);
-      window.card.open(targetElement.dataset.index);
+      window.showCard(targetElement.dataset.index);
     }
   };
 
