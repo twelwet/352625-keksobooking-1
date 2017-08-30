@@ -6,8 +6,30 @@
   var ESC_KEYCODE = 27;
   var ENTER_KEYCODE = 13;
 
-  // Вставляем пины на карту
-  window.pin.paste(window.data);
+  // Объявим callback-функцию которая отрисует пины
+  // при успешной загрузке данных
+  var onLoad = function (data) {
+    window.pin.paste(data);
+  };
+
+  // Объявим callback-функцию, которая сообщит об ошибке
+  // при неуспешной попытке загрузить данные с сервера
+  var onError = function (message) {
+    var node = document.createElement('div');
+    node.style.backgroundColor = 'red';
+    node.style.margin = 'auto';
+    node.style.textAlign = 'center';
+    node.style.position = 'relative';
+    node.style.fontSize = '18px';
+    node.style.color = 'white';
+    node.textContent = message;
+    document.body.insertAdjacentElement('afterbegin', node);
+  };
+
+  window.onError = onError;
+
+  // Вызовем саму функцию загрузки данных
+  window.backend.load(onLoad, onError);
 
   // Скрываем карточку объявления по умолчанию при загрузке страницы
   window.card.close();

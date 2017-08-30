@@ -3,7 +3,6 @@
 
 (function () {
 
-  // form.js
   // Объявим переменные полей объявления и кнопки
   var form = document.querySelector('.notice__form');
   var title = form.querySelector('#title');
@@ -34,8 +33,6 @@
   };
 
   setDefaultForm();
-
-  /* ------------------*/
 
   var syncValues = function (element, value) {
     element.value = value;
@@ -128,12 +125,13 @@
 
   // Проверим правильность заполнения полей формы title.value и price.value
   form.addEventListener('submit', function (evt) {
-    // Отменяем действие по умолчанию
-    evt.preventDefault();
     // Проводим валидацию
     if (validateForm()) {
-      form.submit();
-      setDefaultForm();
+      window.backend.save(new FormData(form), function (response) {
+        setDefaultForm();
+      });
+      // Отменяем действие по умолчанию
+      evt.preventDefault();
     }
   });
 
