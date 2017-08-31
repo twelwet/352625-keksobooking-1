@@ -3,7 +3,6 @@
 
 (function () {
 
-  // form.js
   // Объявим переменные полей объявления и кнопки
   var form = document.querySelector('.notice__form');
   var title = form.querySelector('#title');
@@ -14,6 +13,15 @@
   var roomNumber = form.querySelector('#room_number');
   var capacity = form.querySelector('#capacity');
   var address = form.querySelector('#address');
+
+  // Объявим функцию заполнения строки адреса координатами
+  var fillAddress = function () {
+    var pinHandleCoords = {
+      x: (window.pin.handle.offsetLeft + window.pin.handle.offsetWidth / 2),
+      y: (window.pin.handle.offsetTop + window.pin.handle.offsetHeight)
+    };
+    address.value = 'x: ' + pinHandleCoords.x + ', y: ' + pinHandleCoords.y;
+  };
 
   // Объявим функцию сброса формы в умолчание
   var setDefaultForm = function () {
@@ -30,19 +38,22 @@
     price.value = 1000;
     // Параметры адреса объявления
     address.required = true;
-    address.disabled = true;
+    address.readOnly = true;
+    // Сбрасываем координаты метки по умолчанию
+    window.pin.handle.style.top = '300px';
+    window.pin.handle.style.left = '600px';
+    // Вызываем функцию заполнения строки адреса координатами по умолчанию
+    fillAddress();
   };
 
   setDefaultForm();
-
-  /* ------------------*/
 
   var syncValues = function (element, value) {
     element.value = value;
   };
 
-  window.synchronizeFields(timein, timeout, [12, 13, 14], [12, 13, 14], syncValues);
-  window.synchronizeFields(timeout, timein, [12, 13, 14], [12, 13, 14], syncValues);
+  window.synchronizeFields(timein, timeout, ['12:00', '13:00', '14:00'], ['12:00', '13:00', '14:00'], syncValues);
+  window.synchronizeFields(timeout, timein, ['12:00', '13:00', '14:00'], ['12:00', '13:00', '14:00'], syncValues);
   window.synchronizeFields(type, price, ['flat', 'bungalo', 'house', 'palace'], [1000, 0, 5000, 10000], syncValues);
 
   // Задаем механизм типа размещения от цены
@@ -126,18 +137,37 @@
     return titleValid && numberValid && addressValid;
   };
 
-  // Проверим правильность заполнения полей формы title.value и price.value
+  // Объявим callback-функцию которая отправляет данные формы
+  // на сервер и сбрасывает форму на значения по умолчанию
+  var onSuccess = function () {
+    setDefaultForm();
+  };
+
+  // Объявим callback-функцию, которая сообщит об ошибке
+  // при неуспешной попытке загрузить данные с сервера
+  var onError = function (message) {
+    var node = document.createElement('div');
+    node.style.backgroundColor = 'black';
+    node.style.margin = 'auto';
+    node.style.textAlign = 'center';
+    node.style.position = 'relative';
+    node.style.fontSize = '18px';
+    node.style.color = 'white';
+    node.textContent = message;
+    document.querySelector('.notice__form').insertAdjacentElement('beforeend', node);
+  };
+
+  // Проверим правильность заполнения полей формы title.value, price.value, address.value
   form.addEventListener('submit', function (evt) {
-    // Отменяем действие по умолчанию
     evt.preventDefault();
     // Проводим валидацию
     if (validateForm()) {
-      form.submit();
-      setDefaultForm();
+      window.backend.save(new FormData(form), onSuccess, onError);
     }
   });
 
   window.form = {
-    address: address
+    address: address,
+    fillAddress: fillAddress
   };
 })();

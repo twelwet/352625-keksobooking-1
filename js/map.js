@@ -6,8 +6,29 @@
   var ESC_KEYCODE = 27;
   var ENTER_KEYCODE = 13;
 
-  // Вставляем пины на карту
-  window.pin.paste(window.data);
+  // Объявим callback-функцию которая отрисует пины
+  // при успешной загрузке данных
+  var onLoad = function (data) {
+    window.pin.paste(data);
+    window.data = data;
+  };
+
+  // Объявим callback-функцию, которая сообщит об ошибке
+  // при неуспешной попытке загрузить данные с сервера
+  var onError = function (message) {
+    var node = document.createElement('div');
+    node.style.backgroundColor = 'red';
+    node.style.margin = 'auto';
+    node.style.textAlign = 'center';
+    node.style.position = 'relative';
+    node.style.fontSize = '18px';
+    node.style.color = 'white';
+    node.textContent = message;
+    document.body.insertAdjacentElement('afterbegin', node);
+  };
+
+  // Вызовем саму функцию загрузки данных
+  window.backend.load(onLoad, onError);
 
   // Скрываем карточку объявления по умолчанию при загрузке страницы
   window.card.close();
@@ -53,21 +74,8 @@
     }
   });
 
-  // Найдем перетаскиваемый элемент '.pin__main'
-  var pinHandle = document.querySelector('.pin__main');
-
-// Объявим функцию заполнения строки адреса координатами
-  var fillAddress = function () {
-    var pinHandleCoords = {
-      x: (pinHandle.offsetLeft + pinHandle.offsetWidth / 2),
-      y: (pinHandle.offsetTop + pinHandle.offsetHeight)
-    };
-    window.form.address.value = 'x: ' + pinHandleCoords.x + ', y: ' + pinHandleCoords.y;
-  };
-
-  fillAddress();
-
-  pinHandle.addEventListener('mousedown', function (evt) {
+  // Задаем механизм перетаскивания метки объявления
+  window.pin.handle.addEventListener('mousedown', function (evt) {
     evt.preventDefault();
     var startCoords = {
       x: evt.clientX,
@@ -77,7 +85,7 @@
     var onMouseMove = function (moveEvt) {
       moveEvt.preventDefault();
 
-      fillAddress();
+      window.form.fillAddress();
 
       var shift = {
         x: startCoords.x - moveEvt.clientX,
@@ -89,8 +97,8 @@
         y: moveEvt.clientY
       };
 
-      pinHandle.style.top = (pinHandle.offsetTop - shift.y) + 'px';
-      pinHandle.style.left = (pinHandle.offsetLeft - shift.x) + 'px';
+      window.pin.handle.style.top = (window.pin.handle.offsetTop - shift.y) + 'px';
+      window.pin.handle.style.left = (window.pin.handle.offsetLeft - shift.x) + 'px';
     };
 
     var onMouseUp = function (upEvt) {
