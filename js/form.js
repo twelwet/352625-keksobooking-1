@@ -14,6 +14,15 @@
   var capacity = form.querySelector('#capacity');
   var address = form.querySelector('#address');
 
+  // Объявим функцию заполнения строки адреса координатами
+  var fillAddress = function () {
+    var pinHandleCoords = {
+      x: (window.pin.handle.offsetLeft + window.pin.handle.offsetWidth / 2),
+      y: (window.pin.handle.offsetTop + window.pin.handle.offsetHeight)
+    };
+    address.value = 'x: ' + pinHandleCoords.x + ', y: ' + pinHandleCoords.y;
+  };
+
   // Объявим функцию сброса формы в умолчание
   var setDefaultForm = function () {
     form.reset();
@@ -30,6 +39,11 @@
     // Параметры адреса объявления
     address.required = true;
     address.readOnly = true;
+    // Сбрасываем координаты метки по умолчанию
+    window.pin.handle.style.top = '300px';
+    window.pin.handle.style.left = '600px';
+    // Вызываем функцию заполнения строки адреса координатами по умолчанию
+    fillAddress();
   };
 
   setDefaultForm();
@@ -125,7 +139,7 @@
 
   // Объявим callback-функцию которая отправляет данные формы
   // на сервер и сбрасывает форму на значения по умолчанию
-  var onSuccess = function (response) {
+  var onSuccess = function () {
     setDefaultForm();
   };
 
@@ -145,15 +159,15 @@
 
   // Проверим правильность заполнения полей формы title.value, price.value, address.value
   form.addEventListener('submit', function (evt) {
+    evt.preventDefault();
     // Проводим валидацию
     if (validateForm()) {
       window.backend.save(new FormData(form), onSuccess, onError);
-      // Отменяем действие по умолчанию
-      evt.preventDefault();
     }
   });
 
   window.form = {
-    address: address
+    address: address,
+    fillAddress: fillAddress
   };
 })();

@@ -35,6 +35,7 @@
     activate: function (elem) {
       window.pin.deactivate();
       elem.classList.add('pin--active');
-    }
+    },
+    handle: document.querySelector('.pin__main')
   };
 })();
