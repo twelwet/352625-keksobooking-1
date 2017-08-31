@@ -10,6 +10,7 @@
   // при успешной загрузке данных
   var onLoad = function (data) {
     window.pin.paste(data);
+    window.data = data;
   };
 
   // Объявим callback-функцию, которая сообщит об ошибке
@@ -25,8 +26,6 @@
     node.textContent = message;
     document.body.insertAdjacentElement('afterbegin', node);
   };
-
-  window.onError = onError;
 
   // Вызовем саму функцию загрузки данных
   window.backend.load(onLoad, onError);

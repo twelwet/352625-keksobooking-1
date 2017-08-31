@@ -29,7 +29,7 @@
     price.value = 1000;
     // Параметры адреса объявления
     address.required = true;
-    address.disabled = true;
+    address.readOnly = true;
   };
 
   setDefaultForm();
@@ -38,8 +38,8 @@
     element.value = value;
   };
 
-  window.synchronizeFields(timein, timeout, [12, 13, 14], [12, 13, 14], syncValues);
-  window.synchronizeFields(timeout, timein, [12, 13, 14], [12, 13, 14], syncValues);
+  window.synchronizeFields(timein, timeout, ['12:00', '13:00', '14:00'], ['12:00', '13:00', '14:00'], syncValues);
+  window.synchronizeFields(timeout, timein, ['12:00', '13:00', '14:00'], ['12:00', '13:00', '14:00'], syncValues);
   window.synchronizeFields(type, price, ['flat', 'bungalo', 'house', 'palace'], [1000, 0, 5000, 10000], syncValues);
 
   // Задаем механизм типа размещения от цены
@@ -123,13 +123,31 @@
     return titleValid && numberValid && addressValid;
   };
 
-  // Проверим правильность заполнения полей формы title.value и price.value
+  // Объявим callback-функцию которая отправляет данные формы
+  // на сервер и сбрасывает форму на значения по умолчанию
+  var onSuccess = function (response) {
+    setDefaultForm();
+  };
+
+  // Объявим callback-функцию, которая сообщит об ошибке
+  // при неуспешной попытке загрузить данные с сервера
+  var onError = function (message) {
+    var node = document.createElement('div');
+    node.style.backgroundColor = 'black';
+    node.style.margin = 'auto';
+    node.style.textAlign = 'center';
+    node.style.position = 'relative';
+    node.style.fontSize = '18px';
+    node.style.color = 'white';
+    node.textContent = message;
+    document.querySelector('.notice__form').insertAdjacentElement('beforeend', node);
+  };
+
+  // Проверим правильность заполнения полей формы title.value, price.value, address.value
   form.addEventListener('submit', function (evt) {
     // Проводим валидацию
     if (validateForm()) {
-      window.backend.save(new FormData(form), function (response) {
-        setDefaultForm();
-      });
+      window.backend.save(new FormData(form), onSuccess, onError);
       // Отменяем действие по умолчанию
       evt.preventDefault();
     }
