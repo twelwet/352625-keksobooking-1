@@ -36,6 +36,12 @@
       window.pin.deactivate();
       elem.classList.add('pin--active');
     },
+    remove: function () {
+      var pins = document.querySelectorAll('.pin');
+      for (var i = 1; i < pins.length; i++) {
+        pins[i].remove();
+      }
+    },
     handle: document.querySelector('.pin__main')
   };
 })();

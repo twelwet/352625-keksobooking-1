@@ -6,11 +6,13 @@
   var ESC_KEYCODE = 27;
   var ENTER_KEYCODE = 13;
 
+  var totalData = [];
   // Объявим callback-функцию которая отрисует пины
   // при успешной загрузке данных
   var onLoad = function (data) {
-    window.pin.paste(data);
-    window.data = data;
+    totalData = data;
+    window.data = window.filter.do(totalData);
+    window.pin.paste(window.data);
   };
 
   // Объявим callback-функцию, которая сообщит об ошибке
@@ -111,4 +113,29 @@
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
   });
+
+  // Задаем механизм фильтрации вариантов размещения
+  window.filter.container.addEventListener('change', function () {
+    window.card.close();
+    window.data = window.filter.do(totalData);
+    window.pin.remove();
+    window.pin.paste(window.data);
+  });
+
+  window.filter.features.forEach(function (featureSet) {
+    featureSet.addEventListener('click', function () {
+      if (featureSet.checked) {
+        window.filter.featuresSets.push(featureSet.value);
+      }
+      if (!featureSet.checked) {
+        for (var i = 0; i < window.filter.featuresSets.length; i++) {
+          if (featureSet.value === window.filter.featuresSets[i]) {
+            window.filter.featuresSets.splice(i, 1);
+          }
+        }
+      }
+    });
+  });
+
+
 })();
