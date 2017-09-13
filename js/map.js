@@ -10,6 +10,7 @@
   // Объявим callback-функцию которая отрисует пины
   // при успешной загрузке данных
   var onLoad = function (data) {
+    window.filter.updateFeaturesSets();
     totalData = data;
     window.data = window.filter.do(totalData);
     window.pin.paste(window.data);
@@ -116,26 +117,11 @@
 
   // Задаем механизм фильтрации вариантов размещения
   window.filter.container.addEventListener('change', function () {
+    window.filter.updateFeaturesSets();
     window.card.close();
     window.data = window.filter.do(totalData);
     window.pin.remove();
     window.pin.paste(window.data);
   });
-
-  window.filter.features.forEach(function (featureSet) {
-    featureSet.addEventListener('click', function () {
-      if (featureSet.checked) {
-        window.filter.featuresSets.push(featureSet.value);
-      }
-      if (!featureSet.checked) {
-        for (var i = 0; i < window.filter.featuresSets.length; i++) {
-          if (featureSet.value === window.filter.featuresSets[i]) {
-            window.filter.featuresSets.splice(i, 1);
-          }
-        }
-      }
-    });
-  });
-
 
 })();

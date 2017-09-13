@@ -13,16 +13,33 @@
 
   var featuresSets = [];
 
+  // Функция возвращает boolean-массив преимуществ для дальнейшего
+  // поэлементоного сравнения с boolean-массивом отмеченных инпутов
+  var convertFeaturesFormat = function (data) {
+    var newFormatOfFeatures = [];
+    for (var i = 0; i < featuresIn.length; i++) {
+      for (var j = 0; j < data.offer.features.length; j++) {
+        if (featuresIn[i].value === data.offer.features[j]) {
+          newFormatOfFeatures[i] = true;
+          break;
+        } else {
+          newFormatOfFeatures[i] = false;
+        }
+      }
+    }
+    return newFormatOfFeatures;
+  };
+
+  var isEveryFalse = function (element) {
+    return element === false;
+  };
+
   // Массив функций-фильтров. Каждая функция-фильтр принимает на вход
   // объект данных, а на выходе отдает значение 'true/false'
   var filterList = [
     // Фильтр типа размещения
     function housingFilter(data) {
-      if (filterHousing.value === data.offer.type || filterHousing.value === 'any') {
-        return true;
-      } else {
-        return false;
-      }
+      return (filterHousing.value === data.offer.type || filterHousing.value === 'any') ? true : false;
     },
     // Ценовой фильтр
     function priceFilter(data) {
@@ -39,38 +56,30 @@
     },
     // Фильтр количества комнат
     function roomNumberFilter(data) {
-      if (Number(filterRoomNumber.value) === data.offer.rooms || filterRoomNumber.value === 'any') {
-        return true;
-      } else {
-        return false;
-      }
+      return (Number(filterRoomNumber.value) === data.offer.rooms || filterRoomNumber.value === 'any') ? true : false;
     },
     // Фильтр количества гостей
     function guestsNumberFilter(data) {
-      if (Number(filterGuestsNumber.value) === data.offer.guests || filterGuestsNumber.value === 'any') {
-        return true;
-      } else {
-        return false;
-      }
+      return (Number(filterGuestsNumber.value) === data.offer.guests || filterGuestsNumber.value === 'any') ? true : false;
     },
     // Фильтр преимуществ размещения
-    function filterFeaturesHouse(pin) {
-      if (featuresSets.length === 0) {
-        return true;
-      }
-      for (var i = 0; i < featuresSets.length; i++) {
-        var featureFound = false;
-        for (var j = 0; j < pin.offer.features.length; j++) {
-          if (featuresSets[i] === pin.offer.features[j]) {
-            featureFound = true;
-            break;
+    function filterFeaturesHouse(data) {
+      switch (featuresSets.every(isEveryFalse)) {
+        case true:
+          return true;
+        default:
+          var booleanFeatures = convertFeaturesFormat(data);
+          var trueFoundCounter = featuresSets.filter(function (element) {
+            return element === true;
+          }).length;
+          var featureFoundCounter = 0;
+          for (var i = 0; i < featuresSets.length; i++) {
+            if (featuresSets[i] === true && booleanFeatures[i] === true) {
+              featureFoundCounter += 1;
+            }
           }
-        }
-        if (!featureFound) {
-          return false;
-        }
+          return (trueFoundCounter === featureFoundCounter) ? true : false;
       }
-      return true;
     }
   ];
 
@@ -90,9 +99,23 @@
     do: function (offerList) {
       return offerList.filter(filterAllFields);
     },
+    // Функция наполняет массив featuresSets значениями:
+    // true - если input.checked
+    // false - если !input.checked
+    updateFeaturesSets: function () {
+      for (var i = 0; i < featuresIn.length; i++) {
+        switch (featuresIn[i].checked) {
+          case true:
+            featuresSets[i] = true;
+            break;
+          default:
+            featuresSets[i] = false;
+            break;
+        }
+      }
+    },
     // Опубликуем в глобальную область видимости следующие переменные
     container: filterContainer,
-    features: featuresIn,
     featuresSets: featuresSets
   };
 

@@ -37,10 +37,10 @@
       elem.classList.add('pin--active');
     },
     remove: function () {
-      var pins = document.querySelectorAll('.pin');
-      for (var i = 1; i < pins.length; i++) {
-        pins[i].remove();
-      }
+      var pins = document.querySelectorAll('div.pin:not(.pin__main)');
+      pins.forEach(function (node) {
+        node.remove();
+      });
     },
     handle: document.querySelector('.pin__main')
   };
