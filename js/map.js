@@ -7,13 +7,19 @@
   var ENTER_KEYCODE = 13;
 
   var totalData = [];
+
+  // Объявим функцию фильтрации данных и вставки
+  // соответствующих пинов на карту
+  var filterAndPaste = function () {
+    window.data = window.filter.do(totalData);
+    window.pin.paste(window.data);
+  };
+
   // Объявим callback-функцию которая отрисует пины
   // при успешной загрузке данных
   var onLoad = function (data) {
-    window.filter.updateFeaturesSets();
     totalData = data;
-    window.data = window.filter.do(totalData);
-    window.pin.paste(window.data);
+    filterAndPaste();
   };
 
   // Объявим callback-функцию, которая сообщит об ошибке
@@ -117,11 +123,9 @@
 
   // Задаем механизм фильтрации вариантов размещения
   window.filter.container.addEventListener('change', function () {
-    window.filter.updateFeaturesSets();
     window.card.close();
-    window.data = window.filter.do(totalData);
     window.pin.remove();
-    window.pin.paste(window.data);
+    filterAndPaste();
   });
 
 })();
