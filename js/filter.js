@@ -21,7 +21,7 @@
   // Функция получения фильтруемых параметров
   // в формате '[{key1: value1}, {key2: value2},..]'
   var filterAppartment = function (data) {
-    var getFeature = function (features, feature) {
+    var getFeature = function (features) {
       for (var i = 0; i < data.offer.features.length; i++) {
         features[data.offer.features[i]] = true;
       }
