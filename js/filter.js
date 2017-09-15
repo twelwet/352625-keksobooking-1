@@ -18,30 +18,34 @@
     return nodesArray.map(getParams);
   };
 
-  var nodes = document.querySelectorAll('.tokyo__filters option:checked:not([value="any"]), .tokyo__filters input:checked');
-
   // Функция получения фильтруемых параметров
   // в формате '[{key1: value1}, {key2: value2},..]'
   var filterAppartment = function (data) {
-    var getFeature = function (feats, feat) {
-      // [ВОПРОС]
-      // Здесь ESLint показывает ошибку 'Unexpected token', как ее исправить?
-      return Object.assign({}, feats, {[feat]: true});
+    var getFeature = function (features, feature) {
+      for (var i = 0; i < data.offer.features.length; i++) {
+        features[data.offer.features[i]] = true;
+      }
+      return features;
     };
     var appartmentFeatures = data.offer.features.reduce(getFeature, {});
+    var housingPrice;
+    if (data.offer.price < 10000) {
+      housingPrice = 'low';
+    } else if (data.offer.price > 50000) {
+      housingPrice = 'high';
+    } else {
+      housingPrice = 'middle';
+    }
     var appartmentParams = {
       'housing_type': data.offer.type,
-      // [ВОПРОС]
-      // Здесь ESLint-ошибка: 'Do not nest ternary expressions', как ее исправить?
-      'housing_price': data.offer.price < 10000 ? 'low' : data.offer.price > 50000 ? 'hight' : 'middle',
-      'housing_room-number': data.offer.rooms,
-      'housing_guests-number': data.offer.guests
+      'housing_price': housingPrice,
+      'housing_room-number': String(data.offer.rooms),
+      'housing_guests-number': String(data.offer.guests)
     };
     assignedParams = Object.assign({}, appartmentParams, appartmentFeatures);
+    var nodes = document.querySelectorAll('.tokyo__filters option:checked:not([value="any"]), .tokyo__filters input:checked');
     return getFilterParams(nodes).every(function (param) {
-      // [ВОПРОС]
-      // Здесь на выходе всегда выдается 'false', что не так?
-      assignedParams[param.name] === param.value;
+      return assignedParams[param.name] === param.value;
     });
   };
 

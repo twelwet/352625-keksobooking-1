@@ -12,12 +12,15 @@
   // соответствующих пинов на карту
   var filterAndPaste = function () {
     window.data = window.filter.do(totalData);
-    window.pin.paste(window.data);
+    // [ВОПРОС] Debounce не работает, подскажи что исправить?
+    window.debounce(window.pin.paste(window.data));
   };
 
   // Объявим callback-функцию которая отрисует пины
   // при успешной загрузке данных
   var onLoad = function (data) {
+    // Согласно ТЗ при загрузке должно отображаться три пина
+    window.filter.container.querySelector('#housing_price').value = 'low';
     totalData = data;
     filterAndPaste();
   };
