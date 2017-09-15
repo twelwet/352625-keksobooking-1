@@ -127,8 +127,7 @@
   window.filter.container.addEventListener('change', function () {
     window.card.close();
     window.pin.remove();
-    // Все равно debounce не работает
-    window.debounce(filterAndPaste());
+    window.debounce(filterAndPaste);
   });
 
 })();

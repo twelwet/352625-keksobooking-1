@@ -38,9 +38,9 @@
     },
     remove: function () {
       var pins = document.querySelectorAll('div.pin:not(.pin__main)');
-      pins.forEach(function (node) {
-        node.remove();
-      });
+      for (var i = 0; i < pins.length; i++) {
+        pins[i].remove();
+      }
     },
     handle: document.querySelector('.pin__main')
   };

@@ -2,6 +2,7 @@
 'use strict';
 
 (function () {
+  // [ВОПРОС] Есть повторяющийся код, может объединить в функцию?
   window.backend = {
     load: function (callbackSuccess, callbackError) {
       var xhr = new XMLHttpRequest();
@@ -28,6 +29,9 @@
         if (error) {
           callbackError(error);
         }
+      });
+      xhr.addEventListener('error', function () {
+        callbackError('Произошла ошибка соединения');
       });
       xhr.addEventListener('timeout', function () {
         callbackError('Запрос не успел выполниться за ' + xhr.timeout + ' мс');
@@ -61,6 +65,9 @@
         if (error) {
           callbackError(error);
         }
+      });
+      xhr.addEventListener('error', function () {
+        callbackError('Произошла ошибка соединения');
       });
       xhr.addEventListener('timeout', function () {
         callbackError('Запрос не успел выполниться за ' + xhr.timeout + ' мс');

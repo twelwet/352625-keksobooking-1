@@ -3,7 +3,7 @@
 
 (function () {
 
-  var DEBOUNCE_INTERVAL = 3000; // ms
+  var DEBOUNCE_INTERVAL = 300; // ms
 
   var lastTimeout;
 
