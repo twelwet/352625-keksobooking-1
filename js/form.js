@@ -75,13 +75,15 @@
 
   // Задаем механизм зависимости кол-ва мест от кол-ва комнат
   roomNumber.addEventListener('change', function () {
-    // Если выбрано: '2 комнаты' или '3 комнаты' или '100 комнат', то 'для 3 гостей'
-    if (roomNumber.value === '2' || roomNumber.value === '3' || roomNumber.value === '100') {
-      capacity.value = '3';
-    }
-    // Если выбрано: '1 комната', то 'не для гостей'
+    // Если выбрано: '1 комната', то 'для 1 гостя'
     if (roomNumber.value === '1') {
-      capacity.options[3].selected = true;
+      capacity.value = '1';
+      // Если выбрано: '2 комнаты' или '3 комнаты', то 'для 2 гостей'
+    } else if (roomNumber.value === '2' || roomNumber.value === '3') {
+      capacity.value = '2';
+      // Если выбрано: '100 комнат', то 'не для гостей'
+    } else {
+      capacity.value = '0';
     }
   });
 
@@ -91,9 +93,9 @@
     // если 'для 2 гостей', то '2 комнаты';
     // если 'для 3 гостей', то '3 комнаты'
     roomNumber.value = capacity.value;
-    // Если выбрано: 'не для гостей', то '1 комната'
-    if (capacity.options[3].selected === true) {
-      roomNumber.value = '1';
+    // Если выбрано: 'не для гостей', то '100 комната'
+    if (capacity.value === '0') {
+      roomNumber.value = '100';
     }
   });
 

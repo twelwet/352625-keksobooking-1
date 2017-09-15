@@ -2,7 +2,6 @@
 'use strict';
 
 (function () {
-  // [ВОПРОС] Есть повторяющийся код, может объединить в функцию?
   window.backend = {
     load: function (callbackSuccess, callbackError) {
       var xhr = new XMLHttpRequest();
